@@ -1,10 +1,22 @@
-"use client";
-import { SignIn } from "@clerk/nextjs";
+import { Suspense } from "react";
+import AuthHandler from "./handler";
 
-export default function SignInPage() {
+export default function AuthPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ redirect?: string; mode?: string }>;
+}) {
   return (
-    <div className="flex flex-col gap-8 w-96 mx-auto h-screen justify-center items-center">
-      <SignIn />
+    <Suspense fallback={<AuthFallback />}>
+      <AuthHandler searchParamsPromise={searchParams} />
+    </Suspense>
+  );
+}
+
+function AuthFallback() {
+  return (
+    <div className="flex min-h-screen items-center justify-center">
+      <div className="h-2 w-16 rounded-full bg-white/10 animate-pulse" />
     </div>
   );
 }

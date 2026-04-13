@@ -1,8 +1,6 @@
+import { getAuthConfigProvider } from "@convex-dev/better-auth/auth-config";
+import type { AuthConfig } from "convex/server";
+
 export default {
-  providers: [
-    {
-      domain: process.env.NEXT_PUBLIC_CLERK_FRONTEND_API_URL,
-      applicationID: "convex",
-    },
-  ],
-};
+  providers: [getAuthConfigProvider()],
+} satisfies AuthConfig;

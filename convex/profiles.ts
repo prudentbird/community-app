@@ -1,7 +1,8 @@
 import { queryGeneric as query } from "convex/server";
 import { v } from "convex/values";
+import { mutation } from "./_generated/server";
+import { authComponent } from "./auth";
 
-// Query to list users with optional filters
 export const listProfile = query({
   args: {
     titleId: v.optional(v.id("titles")),
@@ -18,7 +19,6 @@ export const listProfile = query({
 
     const users = await usersQuery.collect();
 
-    // Filter by search term if provided
     let filteredUsers = users;
     if (args.searchTerm) {
       const searchLower = args.searchTerm.toLowerCase();
@@ -31,14 +31,10 @@ export const listProfile = query({
       });
     }
 
-    // Enrich with role information
     const enrichedUsers = await Promise.all(
       filteredUsers.map(async (user) => {
         const title = await ctx.db.get(user.title);
-        return {
-          ...user,
-          title: title,
-        };
+        return { ...user, title };
       }),
     );
 
@@ -46,7 +42,6 @@ export const listProfile = query({
   },
 });
 
-// Query to retrieve user by username
 export const getProfileByUsername = query({
   args: { username: v.string() },
   async handler(ctx, args) {
@@ -57,64 +52,75 @@ export const getProfileByUsername = query({
       )
       .unique();
 
-    if (!user) {
-      return null;
-    }
+    if (!user) return null;
 
-    // Enrich with role information
     const title = await ctx.db.get(user.title);
-    return {
-      ...user,
-      title: title,
-    };
+    return { ...user, title };
   },
 });
 
 export const getProfile = query({
   args: {},
   async handler(ctx) {
-    const identity = await ctx.auth.getUserIdentity();
-
-    if (identity === null) {
-      throw new Error("Not authenticated");
-    }
+    const authUser = await authComponent.getAuthUser(ctx);
+    if (!authUser) return null;
 
     const user = await ctx.db
       .query("profile")
-      .filter((q) => q.eq(q.field("email"), identity?.email))
+      .withIndex("by_email", (q) => q.eq("email", authUser.email))
       .unique();
 
-    if (!user) {
-      return null;
-    }
+    if (!user) return null;
 
-    // Enrich with role information
     return await ctx.db
       .get(user.title)
-      .then((title) => {
-        return {
-          ...user,
-          title: title,
-        };
-      })
-      .catch(() => {
-        return { ...user, title: null };
-      });
+      .then((title) => ({ ...user, title }))
+      .catch(() => ({ ...user, title: null }));
   },
 });
 
 export const getForCurrentUser = query({
   args: {},
   handler: async (ctx) => {
-    const identity = await ctx.auth.getUserIdentity();
-
-    if (identity === null) {
-      throw new Error("Not authenticated");
-    }
+    const authUser = await authComponent.getAuthUser(ctx);
+    if (!authUser) return null;
 
     return await ctx.db
       .query("profile")
-      .filter((q) => q.eq(q.field("email"), identity.email))
+      .withIndex("by_email", (q) => q.eq("email", authUser.email))
       .unique();
+  },
+});
+
+export const createProfile = mutation({
+  args: {
+    firstName: v.string(),
+    lastName: v.string(),
+    username: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const authUser = await authComponent.getAuthUser(ctx);
+    if (!authUser) throw new Error("Not authenticated");
+
+    const existing = await ctx.db
+      .query("profile")
+      .withIndex("by_email", (q) => q.eq("email", authUser.email))
+      .unique();
+
+    if (existing) return existing._id;
+
+    return await ctx.db.insert("profile", {
+      userId: authUser._id,
+      email: authUser.email,
+      firstName: args.firstName,
+      lastName: args.lastName,
+      username: args.username.toLowerCase(),
+      phoneNumbers: [],
+      profileImage: null,
+      title: null,
+      shortBio: null,
+      links: [],
+      projects: [],
+    });
   },
 });
