@@ -280,6 +280,8 @@ git fetch upstream
 git rebase upstream/main
 ```
 
+> The pre-push hook runs `next build` which fails with a Clerk `Missing publishableKey` error if Clerk environment variables are not fully configured. Use `git push --no-verify` only for documentation-only changes where the build failure is unrelated to your contribution.
+
 ---
 
 ## Pull Request Guidelines
