@@ -7,6 +7,8 @@ export interface Profile {
   username: string;
   title: Title;
   links: Link[];
+  shortBio: string | null; // max 225 words
+  projects?: Project[];
 }
 
 export interface Title {
@@ -19,4 +21,20 @@ interface Link {
   tag: string; // eg linkedin, github, website
   value: string; // https://linkedin.com
   title: string; // LinkedIn
+}
+
+interface Project {
+  title: string;
+  timeline: {
+    start: number;
+    end: number;
+  };
+  description: string;
+  media: Media[];
+  link?: string[];
+}
+
+interface Media {
+  type: "photo" | "pdf" | "video";
+  metadata: Record<string, unknown>;
 }

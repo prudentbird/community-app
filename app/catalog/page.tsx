@@ -89,25 +89,26 @@ export default async function Catalog({ searchParams }: PageProps) {
               return (
                 <div key={key} className="group">
                   <Link href={`/profile/${profile.username}`}>
-                    <div className="h-full flex flex-col overflow-hidden rounded-2xl bg-slate-50/10 text-white shadow-xl transition-all duration-200 ease-in-out group-hover:-translate-y-1 group-hover:shadow-xl group-hover:shadow-white/10 hover:bg-slate-50/15 border border-white/10 group-hover:border-white/15">
-                      <div className="mx-auto my-2 overflow-hidden rounded-full border border-white/15 group-hover:border-white/20 shadow-lg">
+                    <div className="h-full flex flex-col overflow-hidden rounded-3xl bg-linear-to-br from-slate-50/10 to-slate-50/5 text-white shadow-xl transition-all duration-300 ease-out group-hover:-translate-y-2 group-hover:shadow-2xl group-hover:shadow-white/5 hover:from-slate-50/15 hover:to-slate-50/10 border border-white/10 group-hover:border-white/20">
+                      <div className="mx-auto my-3 overflow-hidden rounded-full border-2 border-white/20 group-hover:border-white/30 shadow-lg ring-4 ring-white/5 group-hover:ring-white/10 transition-all duration-300">
                         <Image
-                          src={profile.profileImage || "/file.svg"} // Fallback image if null
+                          src={profile.profileImage || "/file.svg"}
                           alt={profile.firstName}
                           width={120}
                           height={120}
                           className="object-cover object-center"
                         />
                       </div>
-                      <div className="mt-auto flex flex-col items-center gap-1 rounded-t-[50px] bg-white/15 group-hover:bg-white/20 px-2 py-6 md:px-4 transition-colors duration-200">
-                        <p className="w-fit max-w-[80%] truncate text-center text-lg leading-none font-semibold">
+                      <div className="mt-auto flex flex-col items-center gap-2 rounded-t-[50px] bg-linear-to-t from-white/20 to-white/10 group-hover:from-white/25 group-hover:to-white/15 px-2 py-6 md:px-4 transition-all duration-300 border-t border-white/10">
+                        <p className="w-fit max-w-[80%] truncate text-center text-lg leading-none font-bold tracking-tight">
                           {profile.firstName} {profile.lastName}
                         </p>
-                        <p className="w-fit max-w-[80%] truncate text-center text-sm font-medium text-blue-300">
+                        <p className="w-fit max-w-[80%] truncate text-center text-sm font-medium text-blue-300/90">
                           @{profile.username}
                         </p>
-                        <div className="w-fit flex gap-1 rounded-full leading-none border border-blue-300 bg-blue-200/70 px-3 pt-1.5 pb-2 text-center items-end text-sm font-medium text-blue-900">
-                          <Briefcase size={18} /> {title?.name}
+                        <div className="w-fit flex gap-1.5 rounded-full leading-none border border-blue-400/40 bg-linear-to-r from-blue-500/20 to-blue-600/20 px-3.5 pt-2 pb-2 text-center items-center text-sm font-semibold text-blue-100 backdrop-blur-sm shadow-lg">
+                          <Briefcase size={16} className="text-blue-300" />
+                          <span>{title?.name}</span>
                         </div>
                       </div>
                     </div>

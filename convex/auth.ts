@@ -1,56 +1,30 @@
-import { v } from "convex/values";
-import { mutation } from "./_generated/server";
+import { createClient, type GenericCtx } from "@convex-dev/better-auth";
+import { convex } from "@convex-dev/better-auth/plugins";
+import { betterAuth } from "better-auth/minimal";
+import { components } from "./_generated/api";
+import type { DataModel } from "./_generated/dataModel";
+import { query } from "./_generated/server";
+import authConfig from "./auth.config";
 
-export const createUser = mutation({
-  args: {
-    email: v.string(),
-    firstName: v.string(),
-    username: v.string(),
-    lastName: v.string(),
-    phone: v.optional(v.string()),
-  },
-  handler: async (ctx, args) => {
-    // if user exists
-    const user = await ctx.db
-      .query("users")
-      .filter((q) => q.eq(q.field("email"), args.email))
-      .unique();
+const siteUrl = process.env.SITE_URL as string;
 
-    if (user) {
-      return user._id;
-    }
+export const authComponent = createClient<DataModel>(components.betterAuth);
 
-    const user_id = await ctx.db.insert("users", {
-      email: args.email,
-      emailVerificationTime: Date.now(),
-      phone: args.phone,
-      isAnonymous: false,
-      name: `${args.firstName} ${args.lastName}`,
-    });
+export const createAuth = (ctx: GenericCtx<DataModel>) => {
+  return betterAuth({
+    baseURL: siteUrl,
+    database: authComponent.adapter(ctx),
+    emailAndPassword: {
+      enabled: true,
+      requireEmailVerification: false,
+    },
+    plugins: [convex({ authConfig })],
+  });
+};
 
-    const profile = await ctx.db
-      .query("profile")
-      .filter((q) => q.eq(q.field("email"), args.email))
-      .first();
-
-    if (profile) {
-      await ctx.db.patch(profile._id, {
-        userId: user_id,
-      });
-    } else {
-      await ctx.db.insert("profile", {
-        userId: user_id,
-        email: args.email,
-        firstName: args.firstName,
-        lastName: args.lastName,
-        phoneNumbers: args.phone ? [args.phone] : [],
-        title: null,
-        profileImage: null,
-        username: args.username,
-        links: [],
-      });
-    }
-
-    return user_id;
+export const getCurrentUser = query({
+  args: {},
+  handler: async (ctx) => {
+    return authComponent.getAuthUser(ctx);
   },
 });
