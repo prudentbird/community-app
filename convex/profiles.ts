@@ -122,7 +122,7 @@ export const createProfile = mutation({
       phoneNumbers: [],
       profileImage: null,
       title: null,
-      shortBio: null,
+      shortBio: "",
       links: [],
       projects: [],
     });

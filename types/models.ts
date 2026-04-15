@@ -7,7 +7,7 @@ export interface Profile {
   username: string;
   title: Title;
   links: Link[];
-  shortBio: string | null; // max 225 words
+  shortBio?: string;
   projects?: Project[];
 }
 
