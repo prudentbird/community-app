@@ -1,6 +1,19 @@
+import { redirect } from "next/navigation";
+import { fetchAuthQuery, isAuthenticated } from "@/lib/auth-server";
+import { api } from "~/convex/_generated/api";
 import Sidebar from "./_components/Sidebar";
 
-const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
+const DashboardLayout = async ({ children }: { children: React.ReactNode }) => {
+  const authenticated = await isAuthenticated();
+  if (!authenticated) {
+    redirect("/auth?redirect=/dashboard");
+  }
+
+  const profile = await fetchAuthQuery(api.profiles.getForCurrentUser);
+  if (!profile) {
+    redirect("/onboarding?redirect=/dashboard");
+  }
+
   return (
     <div className="min-h-screen text-white">
       <Sidebar />

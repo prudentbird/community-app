@@ -1,13 +1,11 @@
 "use client";
 
-import { useMutation } from "convex/react";
 import { useRouter } from "next/navigation";
 import { useActionState, useEffect, useState } from "react";
 import { z } from "zod/v4";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
-import { api } from "~/convex/_generated/api";
 import { authClient } from "~/lib/auth-client";
 
 type SignInState = {
@@ -20,7 +18,6 @@ type SignUpState = {
   error?: string;
   success?: boolean;
   timestamp: number;
-  profileData?: { firstName: string; lastName: string; username: string };
 };
 
 const signInSchema = z.object({
@@ -28,16 +25,16 @@ const signInSchema = z.object({
   password: z.string().min(1, "Password is required"),
 });
 
-const signUpSchema = z.object({
-  firstName: z.string().min(2, "First name must be at least 2 characters"),
-  lastName: z.string().min(2, "Last name must be at least 2 characters"),
-  username: z
-    .string()
-    .min(3, "Username must be at least 3 characters")
-    .regex(/^[a-z0-9_-]+$/, "Only lowercase letters, numbers, - and _ allowed"),
-  email: z.email("Invalid email address"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
-});
+const signUpSchema = z
+  .object({
+    email: z.email("Invalid email address"),
+    password: z.string().min(8, "Password must be at least 8 characters"),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
 
 async function signInAction(
   _prev: SignInState,
@@ -65,11 +62,9 @@ async function signUpAction(
   formData: FormData,
 ): Promise<SignUpState> {
   const raw = {
-    firstName: formData.get("firstName") as string,
-    lastName: formData.get("lastName") as string,
-    username: (formData.get("username") as string).toLowerCase(),
     email: formData.get("email") as string,
     password: formData.get("password") as string,
+    confirmPassword: formData.get("confirmPassword") as string,
   };
 
   const parsed = signUpSchema.safeParse(raw);
@@ -80,7 +75,7 @@ async function signUpAction(
   const { error } = await authClient.signUp.email({
     email: parsed.data.email,
     password: parsed.data.password,
-    name: `${parsed.data.firstName} ${parsed.data.lastName}`,
+    name: parsed.data.email.split("@")[0], // Better auth requires a name by default
   });
 
   if (error)
@@ -89,11 +84,6 @@ async function signUpAction(
   return {
     timestamp: Date.now(),
     success: true,
-    profileData: {
-      firstName: parsed.data.firstName,
-      lastName: parsed.data.lastName,
-      username: parsed.data.username,
-    },
   };
 }
 
@@ -106,8 +96,6 @@ export default function AuthForm({
 }) {
   const router = useRouter();
   const [mode, setMode] = useState<"sign-in" | "sign-up">(defaultMode);
-
-  const createProfile = useMutation(api.profiles.createProfile);
 
   const [signInState, signInAction_, signInPending] = useActionState<
     SignInState,
@@ -126,19 +114,10 @@ export default function AuthForm({
   }, [signInState.success, redirectTo, router]);
 
   useEffect(() => {
-    if (!signUpState.success || !signUpState.profileData) return;
-
-    const { firstName, lastName, username } = signUpState.profileData;
-    createProfile({ firstName, lastName, username })
-      .catch(() => {})
-      .finally(() => router.push(redirectTo));
-  }, [
-    signUpState.success,
-    signUpState.profileData,
-    redirectTo,
-    router,
-    createProfile,
-  ]);
+    if (signUpState.success) {
+      window.location.href = `/onboarding?redirect=${encodeURIComponent(redirectTo)}`;
+    }
+  }, [signUpState.success, redirectTo]);
 
   const switchMode = (next: "sign-in" | "sign-up") => {
     setMode(next);
@@ -221,40 +200,6 @@ export default function AuthForm({
                 </p>
               )}
 
-              <div className="flex gap-3">
-                <div className="flex flex-col gap-1.5 flex-1">
-                  <Label htmlFor="firstName">First name</Label>
-                  <Input
-                    id="firstName"
-                    name="firstName"
-                    required
-                    autoComplete="given-name"
-                    placeholder="Jane"
-                  />
-                </div>
-                <div className="flex flex-col gap-1.5 flex-1">
-                  <Label htmlFor="lastName">Last name</Label>
-                  <Input
-                    id="lastName"
-                    name="lastName"
-                    required
-                    autoComplete="family-name"
-                    placeholder="Doe"
-                  />
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="username">Username</Label>
-                <Input
-                  id="username"
-                  name="username"
-                  required
-                  autoComplete="username"
-                  placeholder="janedoe"
-                />
-              </div>
-
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="email-up">Email</Label>
                 <Input
@@ -277,6 +222,19 @@ export default function AuthForm({
                   minLength={8}
                   autoComplete="new-password"
                   placeholder="min. 8 characters"
+                />
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="confirm-password-up">Confirm Password</Label>
+                <Input
+                  id="confirm-password-up"
+                  name="confirmPassword"
+                  type="password"
+                  required
+                  minLength={8}
+                  autoComplete="new-password"
+                  placeholder="Confirm your password"
                 />
               </div>
 
