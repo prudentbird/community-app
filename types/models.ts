@@ -9,6 +9,16 @@ export interface Profile {
   links: Link[];
   shortBio?: string;
   projects?: Project[];
+  workExperience?: ProfileWorkExperience[];
+  interests?: string[];
+}
+
+export interface ProfileWorkExperience {
+  position: string;
+  company: string;
+  startDate: number;
+  endDate?: number | null;
+  description?: string;
 }
 
 export interface Title {

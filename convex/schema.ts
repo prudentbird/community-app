@@ -27,8 +27,18 @@ const project_schema = v.array(
   }),
 );
 
+const profile_work_experience_schema = v.array(
+  v.object({
+    position: v.string(),
+    company: v.string(),
+    startDate: v.number(),
+    endDate: v.optional(v.union(v.number(), v.null())),
+    description: v.optional(v.string()),
+  }),
+);
+
 const work_experience_schema = v.object({
-  userId: v.id("users"),
+  userId: v.string(),
   logo: v.optional(v.string()),
   companyName: v.string(),
   location: v.union(
@@ -61,8 +71,10 @@ const schema = defineSchema({
     username: v.string(),
     title: v.nullable(v.id("titles")),
     links: v.optional(link_schema),
-    shortBio: v.optional(v.string()),
+    shortBio: v.optional(v.nullable(v.string())),
     projects: v.optional(project_schema),
+    workExperience: v.optional(profile_work_experience_schema),
+    interests: v.optional(v.array(v.string())),
   })
     .index("by_username", ["username"])
     .index("by_userId", ["userId"])
