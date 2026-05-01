@@ -107,7 +107,7 @@ async function generateImage({ username }: { username: string }) {
   try {
     const profile = await fetchQuery(api.profiles.getProfileByUsername, {
       username,
-    });
+    }).catch(() => null);
 
     if (!profile) {
       return new ImageResponse(

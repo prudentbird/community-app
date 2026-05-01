@@ -59,6 +59,7 @@ export const getProfileByUsername = query({
     if (!user) return null;
 
     const title = await ctx.db.get(user.title);
+
     return { ...user, title };
   },
 });
