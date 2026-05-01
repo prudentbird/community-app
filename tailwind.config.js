@@ -1,12 +1,12 @@
-const { fontFamily } = require("tailwindcss/defaultTheme");
+import defaultTheme from "tailwindcss/defaultTheme";
 
-module.exports = {
+export default {
   mode: "jit",
   content: ["./components/**/*.(js|ts|tsx)", "./pages/**/*.(js|ts|tsx)"],
   theme: {
     extend: {
       fontFamily: {
-        body: ["var(--font-body)", ...fontFamily.sans],
+        body: ["var(--font-body)", ...defaultTheme.fontFamily.sans],
       },
       colors: {
         primary: "#00A75D",
