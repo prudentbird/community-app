@@ -2,6 +2,7 @@
 - Group related mutations and queries in the same file
 - Add descriptive comments for complex database operations
 - Validate all inputs with proper validators
+- use ConvexError for exceptions instead of generic JS Error exception
 - Handle errors gracefully with appropriate messages
 - query(), mutation() and actions() output must not be directly referenced.
 - Create utility files (e.g., `convex/utils.ts`) for reusable backend logic, such as fetching current user information, to avoid code duplication and improve maintainability.

@@ -5,7 +5,8 @@
 - Ensure convex functions have proper type definitions
 - Prefer `type import` for Interfaces exported from modules
 - Use path aliases for shorter imports
--
+- Default exports should be last statement in every module
+
 ## Shared Interfaces
 - Place shared interfaces in the `src/types` folder to maintain a centralized location for type definitions
 - Organize interfaces into separate files based on their domain or feature area
