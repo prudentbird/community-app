@@ -1,8 +1,9 @@
 /// <reference types="vitest" />
-import { defineConfig } from "vitest/config";
+
 import react from "@vitejs/plugin-react-swc";
-import tsconfigPaths from "vite-tsconfig-paths";
 import { config } from "dotenv";
+import tsconfigPaths from "vite-tsconfig-paths";
+import { defineConfig } from "vitest/config";
 
 // load .env.test
 config({
@@ -14,11 +15,7 @@ export default defineConfig({
   test: {
     globals: true,
     css: true,
-    env: {
-      NEXT_PUBLIC_ALCHEMY_API_KEY: String(
-        process.env.NEXT_PUBLIC_ALCHEMY_API_KEY,
-      ),
-    },
+    env: {},
     // setupFiles: "./tests/setup.ts",
     reporters: ["verbose"],
     environment: "jsdom",
@@ -31,7 +28,6 @@ export default defineConfig({
         "./.next",
         "./components/icons/**",
         "./components/ui/**",
-        "./components/wallet/avatars/**",
         "./**/__tests__/**",
       ],
     },
